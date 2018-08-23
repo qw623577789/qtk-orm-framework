@@ -1,4 +1,4 @@
-const Memcache = require('./memcache');
+const Redis = require('./redis');
 const Mysql = require('./mysql');
 
 module.exports = class {
@@ -7,8 +7,8 @@ module.exports = class {
         switch(connParam.media) {
             case 'mysql':
                 return new Mysql(connParam);
-            case 'memcache':
-                return new Memcache(connParam);
+            case 'redis':
+                return new Redis(connParam);
             default:
                 throw new Error(`unsupported media[${connParam.media}]`);
         }

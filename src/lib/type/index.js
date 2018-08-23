@@ -1,98 +1,41 @@
-const assert = require('assert');
+const ObjectSchema  = require('../schema/object');
+const ArraySchema   = require('../schema/array');
+const StringSchema  = require('../schema/string');
+const NumberSchema  = require('../schema/number');
+const IntegerSchema = require('../schema/integer');
+const BooleanSchema = require('../schema/boolean');
+const NullSchema    = require('../schema/null');
 
-module.exports = class T {
-    static get Mode() {
-        return {
-            VERIFY: 0,
-            NORMALIZE: 1
-        };
-    }
-
-    static object(structure) {
-        assert(typeof structure === 'object', `expecting structure to be an object`);
-        return ({node, name}, mode) => {
-            if (mode === T.Mode.VERIFY || mode === T.Mode.NORMALIZE) {
-                assert(typeof node[name] === 'object', `expecting a object value for key ${name}`);
-                for (const [key, func] of Object.entries(structure)) {
-                    func({node:node[name], name:key}, mode);
-                }
-            }
-            else {
-                assert(false, 'unknown mode');
-            }
-        };
-    }
-
-    static array(func) {
-        assert(typeof func === 'function', `expecting func to be a function`);
-        return ({node, name}, mode) => {
-            if (mode === T.Mode.VERIFY || mode === T.Mode.NORMALIZE) {
-                if (typeof node[name] === 'undefined')
-                    node[name] = [];
-                assert(Array.isArray(node[name]), `expect an array value for key ${name}`);
-                for (const idx in node[name]) {
-                    func({node:node[name], name:idx}, mode);
-                }
-            } else {
-                assert(false, 'unknown mode');
-            }
-        }
-    }
-
-    static string(defaultValue = undefined) {
-        assert((defaultValue === undefined) || (typeof defaultValue === 'string'), `expecting a string / undefined default value`);
-        return ({node, name}, mode) => {
-            if (mode === T.Mode.VERIFY) {
-                assert((typeof node[name] === 'string'), `expecting a string value for key ${name}`);
-            }
-            else if (mode === T.Mode.NORMALIZE) {
-                if (typeof node[name] === 'string') {
-                    return;
-                }
-                assert((typeof node[name] === 'undefined'), `bad type for key ${name}`);
-                node[name] = defaultValue;
-            }
-            else {
-                assert(false, 'unknown mode');
-            }
-        }
-    }
-
-    static integer(defaultValue = undefined) {
-        assert((defaultValue === undefined) || Number.isInteger(defaultValue), `expecting an integer / undefined default value`);
-        return ({node, name}, mode) => {
-            if (mode === T.Mode.VERIFY) {
-                assert(Number.isInteger(node[name]), `expecting an integer for key ${name}`);
-            }
-            else if (mode === T.Mode.NORMALIZE) {
-                if (Number.isInteger(node[name])) {
-                    return;
-                }
-                assert((typeof node[name] === 'undefined'), `bad type for key ${name}`);
-                node[name] = defaultValue;
-            }
-            else {
-                assert(false, 'unknown mode');
-            }
-        }
-    }
-
-    static boolean(defaultValue = undefined) {
-        assert((defaultValue === undefined) || defaultValue === true || defaultValue === false, `expecting a boolean / undefined default value`);
-        return ({node, name}, mode) => {
-            if (mode === T.Mode.VERIFY) {
-                assert(node[name] === true || node[name] === false, `expecting a boolean for key ${name}`);
-            }
-            else if (mode === T.Mode.NORMALIZE) {
-                if (node[name] === true || node[name] === false) {
-                    return;
-                }
-                assert((typeof node[name] === 'undefined'), `bad type for key ${name}`);
-                node[name] = defaultValue;
-            }
-            else {
-                assert(false, 'unknown mode');
-            }
-        }
-    }
+module.exports = {
+    object: (properties) => {
+        let schema = new ObjectSchema();
+        if (properties) schema.properties(properties);
+        return schema;
+    }, 
+    array: (item) => {
+        let schema = new ArraySchema();
+        if (item) schema.item(item);
+        return schema;
+    }, 
+    string: (pattern) => {
+        let schema = new StringSchema();
+        if (pattern) schema.pattern(pattern);
+        return schema;
+    }, 
+    integer: (min, max) => {
+        let schema = new IntegerSchema();
+        if(min) schema.min(min);
+        if(max) schema.max(max);
+        return schema;
+    }, 
+    number: (min, max) => {
+        let schema = new NumberSchema();
+        if(min) schema.min(min);
+        if(max) schema.max(max);
+        return schema;
+    }, 
+    boolean: () => new BooleanSchema(), 
+    NULL: () => new NullSchema(),
+    empty: () => new NullSchema(),
+    invalid: () => new BaseSchema().invalid()
 };

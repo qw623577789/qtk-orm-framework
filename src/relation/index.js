@@ -1,18 +1,17 @@
 const assert = require('assert');
 const Mutex = require('key_mutex');
-const Schema = require('../lib/schema');
+const SchemaValidator = require('../lib/validator');
+const ValueFixer = require('../lib/fixer');
 const Router = require('../lib/router');
-const config = require('../config');
-
-
 module.exports = class R {
     static get Order() {
         return {ASC: 0, DESC: 1};
     }
     
     constructor(name) {
-        this._schema = new Schema(name, `${config.path.relation}/schema`);
-        this._router = new Router(name, `${config.path.relation}/router`);
+        const {definitionDir, removeSchemaUndefinedProperties} = require('../global');
+        this._schema = require(`${definitionDir.relation}/schema/${name.split('.').join('/')}`);
+        this._router = new Router(name, `${definitionDir.relation}/router`);
         this._mutex = Mutex.mutex();
     }
 
@@ -30,18 +29,24 @@ module.exports = class R {
     }
 
     async fetch(subject, object) {
+        const {removeSchemaUndefinedProperties} = require('../global');
         const relations = await this._load(subject);
         const position = relations.findIndex(_ => _.object === object);
         if (position < 0) {
             return undefined;
         }
         let relation = Object.assign({subject}, relations[position]);
-        this._schema.normalize(relation);
+        relation = ValueFixer.from(this._schema).fix(relation, removeSchemaUndefinedProperties);
+        let validator = SchemaValidator.from(this._schema);
+        let isPass = validator.validate(relation);
+        if (isPass == false) throw new Error(validator.errorText);
         return relation;
     }
 
     async put(relation) {
-        this._schema.verify(relation);
+        let validator = SchemaValidator.from(this._schema);
+        let isPass = validator.validate(relation);
+        if (isPass == false) throw new Error(validator.errorText);
 
         const subject = relation.subject;
         relation = Object.assign({}, relation);
@@ -85,7 +90,16 @@ module.exports = class R {
     }
 
     async list(subject, property, order, offset = undefined, number = undefined) {
+        const {removeSchemaUndefinedProperties} = require('../global');
         let relations = await this._load(subject);
+        relations = relations.map(item => {
+            item = Object.assign({subject}, item);
+            item = ValueFixer.from(this._schema).fix(item, removeSchemaUndefinedProperties);
+            let validator = SchemaValidator.from(this._schema);
+            let isPass = validator.validate(item);
+            if (isPass == false) throw new Error(validator.errorText);
+            return item;
+        });
 
         relations.sort((lhs, rhs) => {
             return (order === R.Order.ASC) ? lhs[property] - rhs[property] : rhs[property] - lhs[property];
@@ -98,8 +112,6 @@ module.exports = class R {
             relations.splice(number);
         }
 
-        relations = relations.map(_ => Object.assign({subject}, _));
-        relations.forEach(_ => {this._schema.normalize(_)});
         return relations;
     }
 }

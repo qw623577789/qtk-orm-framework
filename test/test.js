@@ -2,7 +2,8 @@ const assert = require('assert');
 const ORM = require('../');
 ORM.setup({
 	objectPath: `${__dirname}/../example/object`,
-	relationPath: `${__dirname}/../example/relation`
+    relationPath: `${__dirname}/../example/relation`,
+    removeSchemaUndefinedProperties: false
 });
 const ObjectUser = new ORM.Object('user');
 const ObjectMessage = new ORM.Object('message');
@@ -12,9 +13,16 @@ const {Users, Messages, UserMessages} = require('./data');
 
 describe('#basic', function () {
     before( async function() {
-        await Promise.all([ObjectUser.set(Users[0]), ObjectUser.set(Users[1]), ObjectUser.set(Users[2])]);
+        await Promise.all([
+            ObjectUser.set(Users[0]), 
+            ObjectUser.set(Users[1]), 
+            ObjectUser.set(Users[2])
+        ]);
         await Promise.all([ObjectMessage.set(Messages[0]), ObjectMessage.set(Messages[1])]);
-        await Promise.all([RelationUserMessage.put(UserMessages[0]), await RelationUserMessage.put(UserMessages[1])]);
+        await Promise.all([
+            RelationUserMessage.put(UserMessages[0]), 
+            RelationUserMessage.put(UserMessages[1])
+        ]);
     });
 
     after(async function() {
@@ -36,8 +44,12 @@ describe('#basic', function () {
     });
 
     it('[object-get]', async function() {
-        const user = await ObjectUser.get(Users[0].id);
-        assert(user !== undefined && user.name === Users[0].name, 'info should match');
+        let users = await Promise.all([
+            ObjectUser.get(Users[0].id),
+            ObjectUser.get(Users[1].id),
+            ObjectUser.get(Users[2].id)
+        ])
+        console.log(JSON.stringify(users))
     });
 
     it('[relation-has]', async function() {
@@ -58,6 +70,8 @@ describe('#basic', function () {
     });
 
     it('[relation-list]', async function() {
-        assert((await RelationUserMessage.list(Users[0].id, 'readTime', ORM.Relation.Order.ASC)).length === 1, 'length should be 1');
+        let result = await RelationUserMessage.list(Users[0].id, 'readTime', ORM.Relation.Order.ASC);
+        console.log(JSON.stringify(result))
+        assert(result.length === 1, 'length should be 1');
     })
 });

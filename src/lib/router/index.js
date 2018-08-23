@@ -4,16 +4,16 @@ const Backend = require('./backend')
 
 module.exports = class Wrapper {
     constructor(name, routerPath) {
-        this._routerCurrent = new Router(require(`${routerPath}/${name.replace(/\./g, '/')}.js`));
-        if (fs.existsSync(`${routerPath}/${name.replace(/\./g, '/')}.obsolete.js`)) {
-            this._routerObsolete = new Router(require(`${routerPath}/${name.replace(/\./g, '/')}.obsolete.js`));
+        this._routerDeprecated = new Router(require(`${routerPath}/${name.replace(/\./g, '/')}.js`));
+        if (fs.existsSync(`${routerPath}/${name.replace(/\./g, '/')}.deprecated.js`)) {
+            this._routerDeprecated = new Router(require(`${routerPath}/${name.replace(/\./g, '/')}.deprecated.js`));
         }
     }
 
     async get(key) {
         let value = await this._routerCurrent.get(key);
-        if ((value === undefined) && (this._routerObsolete !== undefined)) {
-            value = await this._routerObsolete.get(key);
+        if ((value === undefined) && (this._routerDeprecated !== undefined)) {
+            value = await this._routerDeprecated.get(key);
             if (value !== undefined) {
                 await this._routerCurrent.set(key, value);
             }
@@ -27,8 +27,8 @@ module.exports = class Wrapper {
 
     async del(key) {
         const pendings = [this._routerCurrent.del(key)];
-        if (this._routerObsolete !== undefined) {
-            pendings.push(this._routerObsolete.del(key));
+        if (this._routerDeprecated !== undefined) {
+            pendings.push(this._routerDeprecated.del(key));
         }
         
         await Promise.all(pendings);
@@ -56,12 +56,12 @@ class Router {
 
     async get(key) {
         const {cache, persistence} = this._resolveMedia(key);
-        let value = undefined;
+        let value = null;
         if (cache !== undefined) {
             value = await cache.get(key);
         }
 
-        if (value !== undefined) {
+        if (value !== null) {
             return value;
         }
 

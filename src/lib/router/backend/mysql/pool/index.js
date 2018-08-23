@@ -10,7 +10,8 @@ module.exports = class {
                 port	: connParam.port,
                 user	: connParam.user,
                 password: connParam.password,
-                database: connParam.database
+                database: connParam.database,
+                charset: 'utf8mb4'
             }));
         }
 
