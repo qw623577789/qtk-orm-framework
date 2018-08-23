@@ -32,7 +32,7 @@ module.exports = {
         money: 110,
         null: null,
         location: {
-            // lng: '113.46',
+            lng: '113.46',
             lat: '22.27'
         },
         isVip: false,

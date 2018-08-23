@@ -4,7 +4,7 @@ const Backend = require('./backend')
 
 module.exports = class Wrapper {
     constructor(name, routerPath) {
-        this._routerDeprecated = new Router(require(`${routerPath}/${name.replace(/\./g, '/')}.js`));
+        this._routerCurrent = new Router(require(`${routerPath}/${name.replace(/\./g, '/')}.js`));
         if (fs.existsSync(`${routerPath}/${name.replace(/\./g, '/')}.deprecated.js`)) {
             this._routerDeprecated = new Router(require(`${routerPath}/${name.replace(/\./g, '/')}.deprecated.js`));
         }
