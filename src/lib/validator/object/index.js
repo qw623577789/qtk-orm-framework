@@ -4,7 +4,7 @@ const ObjectValidator = (schema, value, path) => {
     assert(require('isobject')(value) && !(value instanceof RegExp), ` ${path} is not object, now : ${value}`);
     let {properties, patternProperties, required, additionalProperties} = getFinallySchema(schema, value, `.${path}`);
     
-    let hit = 0;
+    let hit = [];
     if (properties != undefined) {
         hit = propertiesCheck(properties, value, path);
     }
@@ -13,7 +13,7 @@ const ObjectValidator = (schema, value, path) => {
     }
 
     required.forEach(_ => assert(Object.keys(value).includes(_) != false, ` ${path} must has properties ${_}`));
-    assert (additionalProperties == true || (additionalProperties == false && Object.keys(value).length == hit), ` ${path} can not add additional properties`);
+    assert (additionalProperties == true || (additionalProperties == false && Object.keys(value).length == hit.length), ` ${path} can not has additional properties: ${Object.keys(value).filter(_ => !hit.includes(_)).join(', ')}`);
 }
 
 function patternPropertiesCheck(patternProperties, value, path) {
@@ -25,7 +25,7 @@ function patternPropertiesCheck(patternProperties, value, path) {
     const ArrayValidator = require('../array');
 
     let keys = Object.keys(value);
-    let hit = 0;
+    let hit = [];
     for (let regexp in patternProperties) {
         let passKeys = [];
         for (let key of keys) {
@@ -56,7 +56,7 @@ function patternPropertiesCheck(patternProperties, value, path) {
                         throw new Error(`no support type ${patternProperties[regexp].type}`);
                 }
                 passKeys.push(key);
-                hit++;
+                hit.push(key);
             }
         }
         keys = keys.filter(_ => !passKeys.includes(_));
@@ -73,7 +73,7 @@ function propertiesCheck(properties, value, path) {
     const ArrayValidator = require('../array');
 
     let keys = Object.keys(value);
-    let hit = 0;
+    let hit = [];
     for (let standardKey in properties) {
         let passKeys = [];
         for (let key of keys) {
@@ -104,7 +104,7 @@ function propertiesCheck(properties, value, path) {
                         throw new Error(`no support type ${properties[standardKey].type}`);
                 }
                 passKeys.push(key);
-                hit++;
+                hit.push(key);
             }
         }
         keys = keys.filter(_ => !passKeys.includes(_));

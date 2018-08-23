@@ -171,7 +171,7 @@ console.log(await ObjectMessage.del(message.id));
 | [true, false]  | boolean().enum(true, false)                  |
 
 ```javascript
-module.exports = object().properties({
+module.exports = {
     id: string().length(16),
     name: string(),
     gender: integer().enum(0, 1),
@@ -194,7 +194,7 @@ module.exports = object().properties({
     extraNumber: number().default(0.9),
     extraBoolean: boolean().default(false),
     extraString: string().default("default")
-}).requireAll();
+};
 ```
 
 ```javascript
@@ -206,11 +206,11 @@ module.exports = object({
     deletedTime: integer().default(0)
 })
     .if.properties({status: 1})
-    .then.require('subject', 'object', 'status', 'readTime')
+    .then.require('subject', 'object', 'status', 'readTime').additionalProperties(false)
     .elseIf.properties({status: 2})
-    .then.require('subject', 'object', 'status', 'deletedTime')
+    .then.require('subject', 'object', 'status', 'deletedTime').additionalProperties(false)
     .else
-    .require('subject', 'object', 'status')
+    .require('subject', 'object', 'status').additionalProperties(false)
     .endIf
 ```
 
