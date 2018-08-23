@@ -127,7 +127,7 @@ console.log(await ObjectMessage.del(message.id));
 - Method
     - **desc(value)** : describe the field
     - **example(value)** : give a example for the field
-    - **default(value)** : give a default value for the field, **if the field be required and target value is undefined, it will use default value to replace it when use get/fetch/list method **
+    - **default(value)** : give a default value for the field, ** if the field be required and target value is undefined, it will use default value to replace it when use get/fetch/list method **
     - **enum(value1,value2...)** : target string/boolean/number/integer value must in enum
     - **max(value)** : target integer/number maximum limit    
     - **min(value)** : target integer/number minimum limit
