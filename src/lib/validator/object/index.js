@@ -64,7 +64,7 @@ function patternPropertiesCheck(patternProperties, value, path) {
     return hit;
 }
 
-function propertiesCheck(properties, value, path) {
+function propertiesCheck(properties, value, path, ObjectValidator) {
     const BooleanValidator = require('../boolean');
     const IntegerValidator = require('../integer');
     const NullValidator = require('../null');

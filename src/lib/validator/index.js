@@ -46,7 +46,6 @@ module.exports = class Validator {
             return true;
         }
         catch(error) {
-            console.log(error)
             this._errorText = error.message;
             return false;
         }
