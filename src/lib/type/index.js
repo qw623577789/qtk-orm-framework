@@ -1,3 +1,4 @@
+const BaseSchema  = require('../schema/base');
 const ObjectSchema  = require('../schema/object');
 const ArraySchema   = require('../schema/array');
 const StringSchema  = require('../schema/string');
