@@ -4,7 +4,7 @@ const NullFixer = require('../null');
 const NumberFixer = require('../number');
 const StringFixer = require('../string');
 const ArrayFixer = require('../array');
-const ObjectValidator = require('../../schema/object');
+const ObjectValidator = require('../../validator/object');
 
 const ObjectFixer = (schema, value, removeSchemaUndefinedProperties) => {
     if (value == undefined) {
